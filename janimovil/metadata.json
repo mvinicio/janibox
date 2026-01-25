@@ -1,0 +1,7 @@
+{
+  "name": "Janibox",
+  "description": "Janibox - Una tienda premium de ramos de dulces artesanales con un asistente de compras impulsado por IA.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
