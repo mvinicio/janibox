@@ -26,6 +26,10 @@ const Home = () => {
 
     const bestSellers = products.filter(p => p.is_best_seller).slice(0, 4);
 
+    const { data: homeSections, loading: sectionsLoading } = useSupabaseData('home_sections', {
+        order: { column: 'order_index', ascending: true }
+    });
+
     const handleProductClick = (product: any) => {
         setSelectedProduct(product);
         setIsDetailOpen(true);
@@ -78,27 +82,29 @@ const Home = () => {
 
             {/* Lifestyle Sections */}
             <section className="grid md:grid-cols-3 gap-1">
-                {[
-                    { title: 'Arreglos de Autor', img: 'https://images.unsplash.com/photo-1575224300306-1b8da36134b4?auto=format&fit=crop&q=80&w=800' },
-                    { title: 'Ramos de Chocolate', img: 'https://images.unsplash.com/photo-1548231580-062e718b5327?auto=format&fit=crop&q=80&w=800' },
-                    { title: 'Eventos Gala', img: 'https://images.unsplash.com/photo-1511910849309-0dffb8c83742?auto=format&fit=crop&q=80&w=800' }
-                ].map((item, idx) => (
-                    <div key={idx} className="relative aspect-square group overflow-hidden cursor-pointer">
-                        <img
-                            src={item.img}
-                            alt={item.title}
-                            className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
-                        />
-                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-end pb-16 px-8 text-center">
-                            <h3 className="text-white text-xl tracking-[0.2em] uppercase mb-8 leading-tight">
-                                {item.title}
-                            </h3>
-                            <button className="btn-minimal !bg-transparent border border-white/50 hover:border-white opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all">
-                                Ver Productos
-                            </button>
+                {sectionsLoading ? (
+                    [...Array(3)].map((_, i) => (
+                        <div key={i} className="aspect-square bg-gray-50 animate-pulse" />
+                    ))
+                ) : (
+                    homeSections.map((item: any, idx: number) => (
+                        <div key={idx} className="relative aspect-square group overflow-hidden cursor-pointer">
+                            <img
+                                src={item.image_url}
+                                alt={item.title}
+                                className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
+                            />
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-end pb-16 px-8 text-center">
+                                <h3 className="text-white text-xl tracking-[0.2em] uppercase mb-8 leading-tight">
+                                    {item.title}
+                                </h3>
+                                <button className="btn-minimal !bg-transparent border border-white/50 hover:border-white opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all">
+                                    Ver Productos
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </section>
 
             {/* Category Filter Catalog */}

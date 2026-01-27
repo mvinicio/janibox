@@ -5,6 +5,7 @@ import Dashboard from './pages/admin/Dashboard';
 import Products from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
 import BasesTreats from './pages/admin/BasesTreats';
+import HomeSections from './pages/admin/HomeSections';
 import Quiz from './pages/public/Quiz';
 import CustomBuilder from './pages/public/CustomBuilder';
 import Checkout from './pages/public/Checkout';
@@ -81,6 +82,7 @@ function App() {
             <Route path="products" element={<Products />} />
             <Route path="categories" element={<Categories />} />
             <Route path="customization" element={<BasesTreats />} />
+            <Route path="home-sections" element={<HomeSections />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />

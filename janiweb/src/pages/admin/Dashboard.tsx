@@ -7,7 +7,8 @@ import {
     LayoutDashboard,
     Box,
     ChevronRight,
-    Settings
+    Settings,
+    Layout
 } from 'lucide-react';
 import { JaniboxLogo } from '../../components/shared/Logos';
 
@@ -24,6 +25,7 @@ const Dashboard = () => {
         { icon: Package, label: 'Productos', path: '/admin/products' },
         { icon: Grid, label: 'Categorías', path: '/admin/categories' },
         { icon: Box, label: 'Bases y Dulces', path: '/admin/customization' },
+        { icon: Layout, label: 'Secciones Home', path: '/admin/home-sections' },
     ];
 
     return (
