@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Candy, Flame, Zap, Leaf, Heart, Cake, Sun, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { JaniboxLogo } from '../../components/shared/Logos';
 
@@ -10,10 +10,10 @@ const steps = [
         title: '¿Cuál es su sabor favorito?',
         description: 'Elegiremos los mejores snacks según tu elección.',
         options: [
-            { id: 'sweet', label: 'Dulce', icon: '🍭', image: 'https://images.unsplash.com/photo-1581798459219-338564070059?auto=format&fit=crop&q=80&w=400' },
-            { id: 'spicy', label: 'Picante', icon: '🔥', image: 'https://images.unsplash.com/photo-1588276552401-30058a0fe57b?auto=format&fit=crop&q=80&w=400' },
-            { id: 'salty', label: 'Salado', icon: '🍿', image: 'https://images.unsplash.com/photo-1541533693247-ad1b29a39ec5?auto=format&fit=crop&q=80&w=400' },
-            { id: 'healthy', label: 'Saludable', icon: '🍓', image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&q=80&w=400' }
+            { id: 'sweet', label: 'Dulce', iconName: 'Candy', image: '/assets/quiz_sweet.png' },
+            { id: 'spicy', label: 'Picante', iconName: 'Flame', image: '/assets/quiz_spicy.png' },
+            { id: 'salty', label: 'Salado', iconName: 'Zap', image: '/assets/quiz_salty.png' },
+            { id: 'healthy', label: 'Saludable', iconName: 'Leaf', image: '/assets/quiz_healthy.png' }
         ]
     },
     {
@@ -21,13 +21,17 @@ const steps = [
         title: '¿Para qué ocasión es?',
         description: 'La presentación importa tanto como el contenido.',
         options: [
-            { id: 'love', label: 'Amor/Aniversario', icon: '❤️', image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=400' },
-            { id: 'birthday', label: 'Cumpleaños', icon: '🎂', image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&q=80&w=400' },
-            { id: 'thanks', label: 'Agradecimiento', icon: '🙏', image: 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&q=80&w=400' },
-            { id: 'congratulations', label: 'Logros', icon: '🎓', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=400' }
+            { id: 'love', label: 'Amor/Aniversario', iconName: 'Heart', image: '/assets/quiz_love.png' },
+            { id: 'birthday', label: 'Cumpleaños', iconName: 'Cake', image: '/assets/quiz_birthday.png' },
+            { id: 'thanks', label: 'Agradecimiento', iconName: 'Sun', image: '/assets/quiz_thanks.png' },
+            { id: 'congratulations', label: 'Logros', iconName: 'Trophy', image: '/assets/quiz_congrats.png' }
         ]
     }
 ];
+
+const IconMap: Record<string, any> = {
+    Candy, Flame, Zap, Leaf, Heart, Cake, Sun, Trophy
+};
 
 const Quiz = () => {
     const [currentStep, setCurrentStep] = useState(0);
@@ -114,8 +118,8 @@ const Quiz = () => {
                                     key={option.id}
                                     onClick={() => handleSelect(option.id)}
                                     className={`relative aspect-[4/5] rounded-[32px] overflow-hidden group transition-all duration-500 border-2 ${selections[currentQuizData.id] === option.id
-                                            ? 'border-primary ring-4 ring-primary/10'
-                                            : 'border-transparent hover:border-gray-200'
+                                        ? 'border-primary ring-4 ring-primary/10'
+                                        : 'border-transparent hover:border-gray-200'
                                         }`}
                                 >
                                     <img
@@ -124,8 +128,13 @@ const Quiz = () => {
                                         className="absolute inset-0 w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-end pb-8">
-                                        <div className="text-3xl mb-2">{option.icon}</div>
-                                        <span className="text-white font-bold tracking-tight uppercase text-xs">{option.label}</span>
+                                        <div className="mb-4 p-4 bg-white/20 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-500 group-hover:bg-white/30">
+                                            {(() => {
+                                                const Icon = IconMap[option.iconName];
+                                                return <Icon size={32} strokeWidth={1.5} className="text-white" />;
+                                            })()}
+                                        </div>
+                                        <span className="text-white font-bold tracking-[0.2em] uppercase text-[10px]">{option.label}</span>
                                     </div>
                                     {selections[currentQuizData.id] === option.id && (
                                         <div className="absolute top-4 right-4 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg">
@@ -144,8 +153,8 @@ const Quiz = () => {
                     disabled={!selections[currentQuizData.id]}
                     onClick={handleNext}
                     className={`w-full max-w-md py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs shadow-xl transition-all flex items-center justify-center gap-3 ${selections[currentQuizData.id]
-                            ? 'bg-primary text-white shadow-primary/30 hover:scale-[1.02] active:scale-95'
-                            : 'bg-gray-100 text-gray-300 shadow-none cursor-not-allowed'
+                        ? 'bg-primary text-white shadow-primary/30 hover:scale-[1.02] active:scale-95'
+                        : 'bg-gray-100 text-gray-300 shadow-none cursor-not-allowed'
                         }`}
                 >
                     {currentStep < steps.length - 1 ? 'Siguiente Paso' : 'Ver Recomendación'}

@@ -9,6 +9,7 @@ import ProductDetailModal from '../../components/public/ProductDetailModal';
 import CartDrawer from '../../components/public/CartDrawer';
 import ChatWidget from '../../components/public/ChatWidget';
 import { Link } from 'react-router-dom';
+import { Sparkles, ChevronRight } from 'lucide-react';
 
 const Home = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -111,10 +112,44 @@ const Home = () => {
             <section id="catalogo" className="py-24 max-w-[1440px] mx-auto px-6 lg:px-12 bg-[#FBFBFB]">
                 <div className="text-center mb-16">
                     <h2 className="text-spaced text-gray-400 mb-4">Nuestra Selección</h2>
-                    <h3 className="text-4xl font-extralight tracking-[0.2em] uppercase mb-4">Todo el Catálogo</h3>
-                    <Link to="/quiz" className="text-primary text-xs font-black uppercase tracking-[0.2em] border-b border-primary/20 hover:border-primary pb-1 transition-all">
-                        ¿No sabes qué elegir? Haz nuestro test ✨
-                    </Link>
+                    <h3 className="text-4xl font-extralight tracking-[0.2em] uppercase mb-12">Todo el Catálogo</h3>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="inline-block"
+                    >
+                        <Link to="/quiz" className="group relative block">
+                            <motion.div
+                                className="absolute -inset-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                                animate={{
+                                    scale: [1, 1.05, 1],
+                                }}
+                                transition={{
+                                    duration: 4,
+                                    repeat: Infinity,
+                                }}
+                            />
+                            <div className="relative flex flex-col items-center gap-4 bg-white/50 backdrop-blur-sm border border-primary/10 px-12 py-8 rounded-[2.5rem] shadow-sm group-hover:shadow-xl group-hover:border-primary/20 transition-all duration-500">
+                                <div className="flex items-center gap-3 text-primary">
+                                    <span className="w-8 h-px bg-primary/30"></span>
+                                    <Sparkles size={20} className="animate-pulse" />
+                                    <span className="w-8 h-px bg-primary/30"></span>
+                                </div>
+                                <span className="text-primary text-sm font-black uppercase tracking-[0.3em] group-hover:scale-110 transition-transform duration-500">
+                                    ¿No sabes qué elegir?
+                                </span>
+                                <span className="text-gray-400 text-xs font-light tracking-[0.2em] uppercase">
+                                    Resuelve nuestro test exclusivo
+                                </span>
+                                <div className="mt-2 flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest border-b border-primary/20 group-hover:border-primary pb-1 transition-all">
+                                    Comenzar ahora
+                                    <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                </div>
+                            </div>
+                        </Link>
+                    </motion.div>
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-12 mb-20">
