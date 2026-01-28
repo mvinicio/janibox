@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabaseClient';
 import toast from 'react-hot-toast';
+import MapPicker from '../../components/public/MapPicker';
 
 const steps = [
     { title: 'Entrega', icon: <Truck size={18} /> },
@@ -29,24 +30,50 @@ const Checkout = () => {
     const [slot, setSlot] = useState('morning');
     const [paymentMethod, setPaymentMethod] = useState('card');
     const [email, setEmail] = useState('');
+    const [customerName, setCustomerName] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [addressDetails, setAddressDetails] = useState('');
+    const [showErrors, setShowErrors] = useState(false);
 
     const isStepValid = () => {
-        if (currentStep === 0) return address.length > 5 && date && email.includes('@');
+        if (currentStep === 0) {
+            return (
+                customerName.length > 2 &&
+                email.includes('@') &&
+                phoneNumber.length > 7 &&
+                address.length > 5 &&
+                date
+            );
+        }
         return true;
     };
 
     const handleNext = () => {
-        if (currentStep === 0) setCurrentStep(1);
+        if (isStepValid()) {
+            if (currentStep === 0) setCurrentStep(1);
+            setShowErrors(false);
+        } else {
+            setShowErrors(true);
+            toast.error('Por favor, completa todos los campos requeridos');
+        }
     };
 
     const handleSubmit = async () => {
+        if (!isStepValid()) {
+            setShowErrors(true);
+            toast.error('Por favor, revisa los datos del pedido');
+            return;
+        }
         setLoading(true);
         try {
             const { data, error } = await supabase.from('orders').insert([{
                 user_email: email,
-                total: cartTotal + 5, // Including fixed $5 shipping for demo
+                customer_name: customerName,
+                customer_phone: phoneNumber,
+                total: cartTotal + 5,
                 items: cart,
                 delivery_address: address,
+                address_details: addressDetails,
                 delivery_slot: slot,
                 delivery_date: date,
                 payment_method: paymentMethod,
@@ -101,29 +128,79 @@ const Checkout = () => {
                                     <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Detalles de Entrega</h2>
 
                                     <div className="space-y-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <label className="block">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Nombre Completo</span>
+                                                <input
+                                                    type="text"
+                                                    value={customerName}
+                                                    onChange={(e) => setCustomerName(e.target.value)}
+                                                    className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all ${showErrors && customerName.length <= 2 ? 'border-red-300 bg-red-50/30' : 'border-transparent'}`}
+                                                    placeholder="Ej. Juan Pérez"
+                                                />
+                                                {showErrors && customerName.length <= 2 && (
+                                                    <span className="text-[9px] text-red-500 font-bold uppercase tracking-wider mt-2 ml-1 block">Demasiado corto</span>
+                                                )}
+                                            </label>
+                                            <label className="block">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Teléfono de Contacto</span>
+                                                <input
+                                                    type="tel"
+                                                    value={phoneNumber}
+                                                    onChange={(e) => setPhoneNumber(e.target.value)}
+                                                    className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all ${showErrors && phoneNumber.length <= 7 ? 'border-red-300 bg-red-50/30' : 'border-transparent'}`}
+                                                    placeholder="Ej. 0987654321"
+                                                />
+                                                {showErrors && phoneNumber.length <= 7 && (
+                                                    <span className="text-[9px] text-red-500 font-bold uppercase tracking-wider mt-2 ml-1 block">Número inválido</span>
+                                                )}
+                                            </label>
+                                        </div>
+
                                         <label className="block">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Tu Email</span>
                                             <input
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                className="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                                className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all ${showErrors && !email.includes('@') ? 'border-red-300 bg-red-50/30' : 'border-transparent'}`}
                                                 placeholder="ejemplo@correo.com"
                                             />
+                                            {showErrors && !email.includes('@') && (
+                                                <span className="text-[9px] text-red-500 font-bold uppercase tracking-wider mt-2 ml-1 block">Email inválido</span>
+                                            )}
                                         </label>
 
                                         <label className="block">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Dirección de Entrega</span>
-                                            <div className="relative">
+                                            <div className="relative mb-4">
                                                 <input
                                                     type="text"
                                                     value={address}
                                                     onChange={(e) => setAddress(e.target.value)}
-                                                    className="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all pl-12"
+                                                    className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all pl-12 ${showErrors && address.length <= 5 ? 'border-red-300 bg-red-50/30' : 'border-transparent'}`}
                                                     placeholder="Calle, Número, Ciudad..."
                                                 />
                                                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                             </div>
+                                            {showErrors && address.length <= 5 && (
+                                                <span className="text-[9px] text-red-500 font-bold uppercase tracking-wider mb-4 ml-1 block">Dirección muy corta</span>
+                                            )}
+                                            <MapPicker
+                                                address={address}
+                                                onAddressChange={(newAddr) => setAddress(newAddr)}
+                                            />
+                                        </label>
+
+                                        <label className="block">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Detalles de Entrega (Apto, Piso, Referencias)</span>
+                                            <input
+                                                type="text"
+                                                value={addressDetails}
+                                                onChange={(e) => setAddressDetails(e.target.value)}
+                                                className="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                                placeholder="Ej. Torre 2, Apto 405. Puerta blanca."
+                                            />
                                         </label>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -134,10 +211,13 @@ const Checkout = () => {
                                                         type="date"
                                                         value={date}
                                                         onChange={(e) => setDate(e.target.value)}
-                                                        className="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all pl-12"
+                                                        className={`w-full bg-gray-50 border-2 rounded-2xl px-6 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all pl-12 ${showErrors && !date ? 'border-red-300 bg-red-50/30' : 'border-transparent'}`}
                                                     />
                                                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                                 </div>
+                                                {showErrors && !date && (
+                                                    <span className="text-[9px] text-red-500 font-bold uppercase tracking-wider mt-2 ml-1 block">Elige una fecha</span>
+                                                )}
                                             </label>
                                             <label className="block">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Horario</span>
@@ -231,9 +311,9 @@ const Checkout = () => {
                         </div>
 
                         <button
-                            disabled={!isStepValid() || loading}
+                            disabled={loading}
                             onClick={currentStep === 0 ? handleNext : handleSubmit}
-                            className={`w-full mt-10 py-5 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-3 shadow-2xl ${(isStepValid() && !loading) ? 'bg-primary text-white shadow-primary/30 hover:scale-[1.02] active:scale-95' : 'bg-gray-100 text-gray-300 shadow-none cursor-not-allowed'
+                            className={`w-full mt-10 py-5 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center justify-center gap-3 shadow-2xl ${!loading ? 'bg-primary text-white shadow-primary/30 hover:scale-[1.02] active:scale-95' : 'bg-gray-100 text-gray-300 shadow-none cursor-not-allowed'
                                 }`}
                         >
                             {loading ? (

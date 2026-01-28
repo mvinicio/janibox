@@ -16,7 +16,7 @@ envContent.split('\n').forEach(line => {
 const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
 
 async function probe() {
-    const tablesToDetail = ['bases', 'treats', 'categories'];
+    const tablesToDetail = ['bases', 'treats', 'categories', 'orders'];
     for (const table of tablesToDetail) {
         console.log(`--- Columns in ${table} ---`);
         const { data, error } = await supabase.from(table).select('*').limit(1);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Smile, Paperclip, ChevronRight } from 'lucide-react';
+import { MessageSquare, X, Send, Smile, Paperclip, ChevronRight, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSupabaseData } from '../../hooks/useSupabaseData';
 
@@ -9,11 +9,15 @@ interface Message {
     sender: 'user' | 'support';
     time: string;
     products?: any[];
+    file?: { url: string; type: string; name: string };
 }
 
 const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [inputText, setInputText] = useState('');
+    const [isListening, setIsListening] = useState(false);
+    const [filePreview, setFilePreview] = useState<{ url: string; type: string; name: string } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [messages, setMessages] = useState<Message[]>([
         { id: 1, text: '¡Hola! 👋 ¿Cómo podemos ayudarte hoy con tu regalo especial?', sender: 'support', time: '10:00 AM' },
         { id: 2, text: 'Nuestro horario de atención es de 9:00 AM a 7:00 PM.', sender: 'support', time: '10:00 AM' }
@@ -28,8 +32,43 @@ const ChatWidget = () => {
         }
     }, [messages, isOpen]);
 
+    // Speech Recognition Setup
+    const startListening = () => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Lo siento, tu navegador no soporta el reconocimiento de voz. 🎙️');
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-ES';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setInputText(prev => (prev ? `${prev} ${transcript}` : transcript));
+        };
+
+        recognition.start();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setFilePreview({
+                url,
+                type: file.type,
+                name: file.name
+            });
+        }
+    };
+
     const handleSendMessage = () => {
-        if (!inputText.trim()) return;
+        if (!inputText.trim() && !filePreview) return;
 
         const normalize = (str: string) =>
             str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -39,11 +78,14 @@ const ChatWidget = () => {
             id: Date.now(),
             text: inputText,
             sender: 'user',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            file: filePreview || undefined
         };
 
         setMessages(prev => [...prev, newMessage]);
         setInputText('');
+        setFilePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
 
         // Simulate Support Response
         setTimeout(() => {
@@ -97,8 +139,28 @@ const ChatWidget = () => {
         }, 1200);
     };
 
+    const [isVisible, setIsVisible] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                // Scrolling down
+                setIsVisible(false);
+            } else {
+                // Scrolling up
+                setIsVisible(true);
+            }
+            setLastScrollY(currentScrollY);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [lastScrollY]);
+
     return (
-        <div className="fixed bottom-8 right-8 z-[120]">
+        <div className={`fixed bottom-6 right-6 z-[120] transition-all duration-500 ${isVisible || isOpen ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -148,6 +210,18 @@ const ChatWidget = () => {
                                         ? 'bg-primary text-white rounded-tr-none border-primary/10'
                                         : 'bg-white text-gray-700 rounded-tl-none border-gray-100'
                                         }`}>
+                                        {msg.file && (
+                                            <div className="mb-3 overflow-hidden rounded-xl border border-black/5 bg-black/5">
+                                                {msg.file.type.startsWith('image/') ? (
+                                                    <img src={msg.file.url} alt="Adjunto" className="w-full h-auto object-cover max-h-[200px]" />
+                                                ) : (
+                                                    <div className="p-3 flex items-center gap-2 text-xs font-medium">
+                                                        <Paperclip size={14} />
+                                                        <span className="truncate">{msg.file.name}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                         <p className="text-sm leading-relaxed">
                                             {msg.text}
                                         </p>
@@ -182,16 +256,57 @@ const ChatWidget = () => {
 
                         {/* Input Area */}
                         <div className="p-4 bg-white border-t border-gray-100">
+                            {/* File Preview */}
+                            <AnimatePresence>
+                                {filePreview && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        className="mb-3 p-2 bg-gray-50 rounded-2xl flex items-center gap-3 border border-gray-100 relative group"
+                                    >
+                                        <div className="w-12 h-12 rounded-xl border border-gray-200 overflow-hidden bg-white shrink-0">
+                                            {filePreview.type.startsWith('image/') ? (
+                                                <img src={filePreview.url} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                    <Paperclip size={20} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-grow min-w-0">
+                                            <p className="text-[11px] font-bold text-gray-900 truncate">{filePreview.name}</p>
+                                            <p className="text-[9px] text-gray-400 uppercase tracking-widest">Listo para enviar</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setFilePreview(null);
+                                                if (fileInputRef.current) fileInputRef.current.value = '';
+                                            }}
+                                            className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-400 transition-colors"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <form
                                 onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
                                 className="relative flex items-center gap-2"
                             >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                />
                                 <div className="flex-grow relative">
                                     <input
                                         type="text"
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
-                                        placeholder="Escribe un mensaje..."
+                                        placeholder={filePreview ? "Añade un comentario..." : "Escribe un mensaje..."}
                                         className="w-full bg-gray-50 border-none rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all pr-12"
                                     />
                                     <button
@@ -203,16 +318,33 @@ const ChatWidget = () => {
                                 </div>
                                 <button
                                     type="submit"
-                                    disabled={!inputText.trim()}
+                                    disabled={!inputText.trim() && !filePreview}
                                     className="bg-primary text-white p-3.5 rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     <Send size={18} />
                                 </button>
                             </form>
                             <div className="mt-3 flex gap-4 px-2">
-                                <button className="flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
                                     <Paperclip size={14} />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Archivo</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={startListening}
+                                    className={`flex items-center gap-1.5 transition-all ${isListening ? 'text-primary animate-pulse' : 'text-gray-400 hover:text-primary'}`}
+                                >
+                                    <div className={`relative flex items-center justify-center ${isListening ? 'scale-110' : ''}`}>
+                                        <Mic size={14} />
+                                        {isListening && <span className="absolute inset-0 bg-primary/20 rounded-full animate-ping"></span>}
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                                        {isListening ? 'Escuchando...' : 'Voz'}
+                                    </span>
                                 </button>
                             </div>
                         </div>
@@ -222,15 +354,15 @@ const ChatWidget = () => {
 
             {/* Toggle Button */}
             <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, opacity: 1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 z-50 ${isOpen ? 'bg-white text-primary' : 'bg-primary text-white'
+                className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 z-50 ${isOpen ? 'bg-white text-primary' : 'bg-primary text-white opacity-60 hover:opacity-100'
                     }`}
             >
-                {isOpen ? <X size={28} /> : <MessageSquare size={28} fill="currentColor" />}
+                {isOpen ? <X size={24} /> : <MessageSquare size={24} fill="currentColor" />}
                 {!isOpen && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></span>
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
                 )}
             </motion.button>
         </div>

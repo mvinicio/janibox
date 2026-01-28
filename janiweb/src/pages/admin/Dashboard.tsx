@@ -8,7 +8,11 @@ import {
     Box,
     ChevronRight,
     Settings,
-    Layout
+    Layout,
+    DollarSign,
+    ClipboardList,
+    BarChart3,
+    ShoppingBag
 } from 'lucide-react';
 import { JaniboxLogo } from '../../components/shared/Logos';
 
@@ -20,16 +24,37 @@ const Dashboard = () => {
         navigate('/admin/login');
     };
 
-    const menuItems = [
-        { icon: LayoutDashboard, label: 'Resumen', path: '/admin', end: true },
-        { icon: Package, label: 'Productos', path: '/admin/products' },
-        { icon: Grid, label: 'Categorías', path: '/admin/categories' },
-        { icon: Box, label: 'Bases y Dulces', path: '/admin/customization' },
-        { icon: Layout, label: 'Secciones Home', path: '/admin/home-sections' },
+    const menuGroups = [
+        {
+            title: 'Gestión de Negocio',
+            color: 'text-blue-500',
+            bgColor: 'bg-blue-50',
+            activeBg: 'bg-blue-100',
+            activeText: 'text-blue-700',
+            items: [
+                { icon: ShoppingBag, label: 'Ordenes', path: '/admin/orders' },
+                { icon: BarChart3, label: 'Finanzas', path: '/admin/finances' },
+                { icon: ClipboardList, label: 'Inventario', path: '/admin/inventory' },
+                { icon: DollarSign, label: 'Costos Operativos', path: '/admin/costs' },
+            ]
+        },
+        {
+            title: 'Catálogo y Contenido',
+            color: 'text-purple-500',
+            bgColor: 'bg-purple-50',
+            activeBg: 'bg-purple-100',
+            activeText: 'text-purple-700',
+            items: [
+                { icon: Package, label: 'Productos', path: '/admin/products' },
+                { icon: Grid, label: 'Categorías', path: '/admin/categories' },
+                { icon: Box, label: 'Bases y Dulces', path: '/admin/customization' },
+                { icon: Layout, label: 'Secciones Home', path: '/admin/home-sections' },
+            ]
+        }
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div className="flex min-h-screen bg-gray-50 font-inter">
             {/* Sidebar */}
             <aside className="w-72 bg-white border-r border-gray-100 flex flex-col fixed h-full z-20">
                 <div className="p-8">
@@ -41,39 +66,74 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-2 mt-4">
-                    {menuItems.map((item) => (
+                <div className="flex-1 px-4 space-y-8 mt-4 overflow-y-auto pb-8 custom-scrollbar">
+                    {/* General Summary */}
+                    <nav className="space-y-1">
                         <NavLink
-                            key={item.path}
-                            to={item.path}
-                            end={item.end}
+                            to="/admin"
+                            end
                             className={({ isActive }) => `
-                flex items-center justify-between p-4 rounded-2xl font-bold transition-all group
-                ${isActive
+                                flex items-center justify-between p-4 rounded-2xl font-bold transition-all group
+                                ${isActive
                                     ? 'bg-primary/10 text-primary'
                                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                 }
-              `}
+                            `}
                         >
-                            {({ isActive }) => (
-                                <>
-                                    <div className="flex items-center gap-4">
-                                        <item.icon size={20} />
-                                        <span>{item.label}</span>
-                                    </div>
-                                    <ChevronRight size={16} className={`transition-transform duration-300 group-hover:translate-x-1 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
-                                </>
-                            )}
+                            <div className="flex items-center gap-4">
+                                <LayoutDashboard size={20} />
+                                <span>Resumen</span>
+                            </div>
+                            <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
                         </NavLink>
+                    </nav>
+
+                    {menuGroups.map((group, idx) => (
+                        <div key={idx} className="space-y-3">
+                            <h3 className="px-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                {group.title}
+                            </h3>
+                            <nav className="space-y-1">
+                                {group.items.map((item) => (
+                                    <NavLink
+                                        key={item.path}
+                                        to={item.path}
+                                        className={({ isActive }) => `
+                                            flex items-center justify-between p-4 rounded-2xl font-bold transition-all group
+                                            ${isActive
+                                                ? `${group.activeBg} ${group.activeText}`
+                                                : `text-gray-500 hover:${group.bgColor} hover:${group.activeText}`
+                                            }
+                                        `}
+                                    >
+                                        {({ isActive }) => (
+                                            <>
+                                                <div className="flex items-center gap-4">
+                                                    <item.icon
+                                                        size={20}
+                                                        className={isActive ? group.activeText : 'text-gray-400 group-hover:text-current'}
+                                                    />
+                                                    <span>{item.label}</span>
+                                                </div>
+                                                <ChevronRight
+                                                    size={16}
+                                                    className={`transition-all duration-300 group-hover:translate-x-1 ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                                                />
+                                            </>
+                                        )}
+                                    </NavLink>
+                                ))}
+                            </nav>
+                        </div>
                     ))}
-                </nav>
+                </div>
 
                 <div className="p-4 border-t border-gray-50">
                     <button
                         onClick={handleSignOut}
-                        className="flex items-center gap-4 w-full p-4 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all font-bold"
+                        className="flex items-center gap-4 w-full p-4 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all font-bold group"
                     >
-                        <LogOut size={20} />
+                        <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
                         <span>Cerrar Sesión</span>
                     </button>
                 </div>

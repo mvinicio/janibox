@@ -6,6 +6,10 @@ import Products from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
 import BasesTreats from './pages/admin/BasesTreats';
 import HomeSections from './pages/admin/HomeSections';
+import Inventory from './pages/admin/Inventory';
+import OperatingCosts from './pages/admin/OperatingCosts';
+import Finances from './pages/admin/Finances';
+import Orders from './pages/admin/Orders';
 import Quiz from './pages/public/Quiz';
 import CustomBuilder from './pages/public/CustomBuilder';
 import Checkout from './pages/public/Checkout';
@@ -83,6 +87,10 @@ function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="customization" element={<BasesTreats />} />
             <Route path="home-sections" element={<HomeSections />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="costs" element={<OperatingCosts />} />
+            <Route path="finances" element={<Finances />} />
+            <Route path="orders" element={<Orders />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
