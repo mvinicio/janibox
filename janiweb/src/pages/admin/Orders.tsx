@@ -3,7 +3,6 @@ import { supabase } from '../../lib/supabaseClient';
 import {
     ShoppingBag,
     Search,
-    Filter,
     Download,
     Edit2,
     CheckCircle2,
