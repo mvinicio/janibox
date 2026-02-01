@@ -12,7 +12,10 @@ import {
     DollarSign,
     ClipboardList,
     BarChart3,
-    ShoppingBag
+    ShoppingBag,
+    Sparkles,
+    Truck,
+    Users
 } from 'lucide-react';
 import { JaniboxLogo } from '../../components/shared/Logos';
 
@@ -35,7 +38,10 @@ const Dashboard = () => {
                 { icon: ShoppingBag, label: 'Ordenes', path: '/admin/orders' },
                 { icon: BarChart3, label: 'Finanzas', path: '/admin/finances' },
                 { icon: ClipboardList, label: 'Inventario', path: '/admin/inventory' },
+                { icon: Truck, label: 'Proveedores', path: '/admin/providers' },
+                { icon: Users, label: 'Clientes', path: '/admin/customers' },
                 { icon: DollarSign, label: 'Costos Operativos', path: '/admin/costs' },
+                { icon: Settings, label: 'Configuración', path: '/admin/settings' },
             ]
         },
         {
@@ -49,6 +55,17 @@ const Dashboard = () => {
                 { icon: Grid, label: 'Categorías', path: '/admin/categories' },
                 { icon: Box, label: 'Bases y Dulces', path: '/admin/customization' },
                 { icon: Layout, label: 'Secciones Home', path: '/admin/home-sections' },
+            ]
+        },
+        {
+            title: 'Marketing e IA',
+            color: 'text-pink-500',
+            bgColor: 'bg-pink-50',
+            activeBg: 'bg-pink-100',
+            activeText: 'text-pink-700',
+            items: [
+                { icon: Sparkles, label: 'Herramientas IA', path: '/admin/marketing' },
+                { icon: ShoppingBag, label: 'Cupones', path: '/admin/rewards' },
             ]
         }
     ];

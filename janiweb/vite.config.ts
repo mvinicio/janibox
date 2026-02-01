@@ -8,4 +8,14 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api/payphone': {
+        target: 'https://pay.payphonetodoesposible.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/payphone/, '/api'),
+        secure: false
+      }
+    }
+  }
 })

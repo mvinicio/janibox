@@ -19,7 +19,8 @@ const BasesTreats = () => {
         price: '',
         description: '',
         image_url: '',
-        category_id: '' // Only for treats
+        category_id: '', // Only for treats
+        payphone_link: ''
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -44,11 +45,12 @@ const BasesTreats = () => {
                 price: item.price.toString(),
                 description: item.description || '',
                 image_url: item.image_url,
-                category_id: item.category_id || ''
+                category_id: item.category_id || '',
+                payphone_link: item.payphone_link || ''
             });
         } else {
             setEditingItem(null);
-            setFormData({ name: '', price: '', description: '', image_url: '', category_id: '' });
+            setFormData({ name: '', price: '', description: '', image_url: '', category_id: '', payphone_link: '' });
         }
         setImageFile(null);
         setIsModalOpen(true);
@@ -66,6 +68,7 @@ const BasesTreats = () => {
                 price: parseFloat(formData.price),
                 description: formData.description,
                 image_url: publicUrl,
+                payphone_link: formData.payphone_link,
                 ...(activeTab === 'treats' ? { category_id: formData.category_id || null } : {})
             };
 
@@ -209,6 +212,17 @@ const BasesTreats = () => {
                                             value={formData.price}
                                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                             className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 ml-1">Link de Pago (PayPhone)</label>
+                                        <input
+                                            type="url"
+                                            value={formData.payphone_link}
+                                            onChange={(e) => setFormData({ ...formData, payphone_link: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20"
+                                            placeholder="https://pay.payphonetodoesposible.com/..."
                                         />
                                     </div>
 

@@ -6,6 +6,7 @@ interface CartItem {
     price: number;
     image_url: string;
     quantity: number;
+    payphone_link?: string;
 }
 
 interface CartContextType {
@@ -58,7 +59,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 name: product.name,
                 price: product.price,
                 image_url: product.image_url,
-                quantity: quantity
+                quantity: quantity,
+                payphone_link: product.payphone_link
             }];
         });
         setIsCartOpen(true);

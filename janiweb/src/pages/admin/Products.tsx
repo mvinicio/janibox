@@ -9,6 +9,7 @@ const Products = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+    const [providers, setProviders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -24,7 +25,9 @@ const Products = () => {
         description: '',
         content: '',
         delivery_time: '',
-        policies: ''
+        delivery_time: '',
+        policies: '',
+        provider_id: ''
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -36,13 +39,15 @@ const Products = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const { data: prods } = await supabase.from('products').select('*, categories(name)').order('created_at', { ascending: false });
+            const { data: prods } = await supabase.from('products').select('*, categories(name), providers(name)').order('created_at', { ascending: false });
             const { data: cats } = await supabase.from('categories').select('*').eq('type', 'product');
             const { data: inv } = await supabase.from('inventory_items').select('*').order('name');
+            const { data: provs } = await supabase.from('providers').select('*').order('name');
 
             setProducts(prods || []);
             setCategories(cats || []);
             setInventoryItems(inv || []);
+            setProviders(provs || []);
         } catch (error: any) {
             console.error('Error fetching data:', error);
         } finally {
@@ -79,7 +84,10 @@ const Products = () => {
                 description: product.description || '',
                 content: product.content || '',
                 delivery_time: product.delivery_time || '',
-                policies: product.policies || ''
+                content: product.content || '',
+                delivery_time: product.delivery_time || '',
+                policies: product.policies || '',
+                provider_id: product.provider_id || ''
             });
             fetchProductMaterials(product.id);
         } else {
@@ -94,7 +102,9 @@ const Products = () => {
                 description: '',
                 content: '',
                 delivery_time: '',
-                policies: ''
+                delivery_time: '',
+                policies: '',
+                provider_id: ''
             });
         }
         setActiveTab('info');
@@ -143,7 +153,9 @@ const Products = () => {
                 description: formData.description,
                 content: formData.content,
                 delivery_time: formData.delivery_time,
-                policies: formData.policies
+                delivery_time: formData.delivery_time,
+                policies: formData.policies,
+                provider_id: formData.provider_id || null
             };
 
             let productId = editingProduct?.id;
@@ -226,6 +238,7 @@ const Products = () => {
                             <tr className="bg-gray-50/50 text-gray-400 text-xs font-black uppercase tracking-widest">
                                 <th className="px-8 py-4">Producto</th>
                                 <th className="px-8 py-4">Categoría</th>
+                                <th className="px-8 py-4">Proveedor</th>
                                 <th className="px-8 py-4">Precio</th>
                                 <th className="px-8 py-4 text-center">Best Seller</th>
                                 <th className="px-8 py-4 text-right">Acciones</th>
@@ -234,7 +247,7 @@ const Products = () => {
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-12 text-center text-gray-400">Cargando productos...</td>
+                                    <td colSpan={6} className="px-8 py-12 text-center text-gray-400">Cargando productos...</td>
                                 </tr>
                             ) : products.map((product: any) => (
                                 <tr key={product.id} className="hover:bg-gray-50/50 transition-colors group">
@@ -247,6 +260,15 @@ const Products = () => {
                                         </div>
                                     </td>
                                     <td className="px-8 py-4 text-gray-500 font-medium">{product.categories?.name}</td>
+                                    <td className="px-8 py-4 text-gray-500 font-medium text-sm">
+                                        {product.providers?.name ? (
+                                            <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                                                {product.providers.name}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-300 text-xs italic">Interno</span>
+                                        )}
+                                    </td>
                                     <td className="px-8 py-4 font-black text-gray-900">${product.price.toFixed(2)}</td>
                                     <td className="px-8 py-4 text-center">
                                         {product.is_best_seller ? (
@@ -355,6 +377,22 @@ const Products = () => {
                                                 ))}
                                             </select>
                                         </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-gray-700 ml-1">Proveedor (Opcional)</label>
+                                            <select
+                                                value={formData.provider_id}
+                                                onChange={(e) => setFormData({ ...formData, provider_id: e.target.value })}
+                                                className="w-full px-4 py-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                                            >
+                                                <option value="">Ninguno (Producción Interna)</option>
+                                                {providers.map((prov: any) => (
+                                                    <option key={prov.id} value={prov.id}>{prov.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+
 
                                         <div className="col-span-2 py-4">
                                             <label className="flex items-center gap-3 cursor-pointer group">

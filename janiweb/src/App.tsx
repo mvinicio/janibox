@@ -10,11 +10,19 @@ import Inventory from './pages/admin/Inventory';
 import OperatingCosts from './pages/admin/OperatingCosts';
 import Finances from './pages/admin/Finances';
 import Orders from './pages/admin/Orders';
+import Settings from './pages/admin/Settings';
 import Quiz from './pages/public/Quiz';
 import CustomBuilder from './pages/public/CustomBuilder';
 import Checkout from './pages/public/Checkout';
 import OrderConfirmation from './pages/public/OrderConfirmation';
 import OrderTracking from './pages/public/OrderTracking';
+import LoginCustomer from './pages/public/LoginCustomer';
+import Profile from './pages/public/Profile';
+import Marketing from './pages/admin/Marketing';
+import Providers from './pages/admin/Providers';
+import Customers from './pages/admin/Customers';
+import About from './pages/public/About';
+import Rewards from './pages/admin/Rewards';
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 import { Toaster } from 'react-hot-toast';
@@ -72,11 +80,14 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/nosotros" element={<About />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/custom" element={<CustomBuilder />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/confirmation/:orderId" element={<OrderConfirmation />} />
           <Route path="/tracking/:orderId" element={<OrderTracking />} />
+          <Route path="/login" element={<LoginCustomer />} />
+          <Route path="/profile" element={session ? <Profile /> : <Navigate to="/login" />} />
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={!session ? <Login /> : <Navigate to="/admin" />} />
@@ -91,6 +102,12 @@ function App() {
             <Route path="costs" element={<OperatingCosts />} />
             <Route path="finances" element={<Finances />} />
             <Route path="orders" element={<Orders />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="marketing" element={<Marketing />} />
+            <Route path="providers" element={<Providers />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="rewards" element={<Rewards />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />

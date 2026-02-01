@@ -8,13 +8,15 @@ import { JaniboxLogo } from '../../components/shared/Logos';
 import ProductDetailModal from '../../components/public/ProductDetailModal';
 import CartDrawer from '../../components/public/CartDrawer';
 import ChatWidget from '../../components/public/ChatWidget';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Sparkles, ChevronRight } from 'lucide-react';
 
 const Home = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const searchQuery = searchParams.get('search');
 
     const { data: products, loading: productsLoading } = useSupabaseData('products', {
         select: '*, categories(name)',
@@ -112,7 +114,9 @@ const Home = () => {
             <section id="catalogo" className="py-24 max-w-[1440px] mx-auto px-6 lg:px-12 bg-[#FBFBFB]">
                 <div className="text-center mb-16">
                     <h2 className="text-spaced text-gray-400 mb-4">Nuestra Selección</h2>
-                    <h3 className="text-4xl font-extralight tracking-[0.2em] uppercase mb-12">Todo el Catálogo</h3>
+                    <h3 className="text-4xl font-extralight tracking-[0.2em] uppercase mb-12">
+                        {searchQuery ? `Resultados para: "${searchQuery}"` : 'Todo el Catálogo'}
+                    </h3>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -177,7 +181,15 @@ const Home = () => {
                         ))
                     ) : (
                         products
-                            .filter(p => selectedCategory === 'all' || p.category_id === selectedCategory)
+                            .filter(p => {
+                                const matchesCategory = selectedCategory === 'all' || p.category_id === selectedCategory;
+                                const searchLower = searchQuery ? searchQuery.toLowerCase() : '';
+                                const matchesSearch = !searchQuery ||
+                                    p.name.toLowerCase().includes(searchLower) ||
+                                    p.description?.toLowerCase().includes(searchLower);
+
+                                return matchesCategory && matchesSearch;
+                            })
                             .map(product => (
                                 <ProductCard
                                     key={product.id}
@@ -186,6 +198,22 @@ const Home = () => {
                                 />
                             ))
                     )}
+
+                    {!productsLoading && products.filter(p => {
+                        const matchesCategory = selectedCategory === 'all' || p.category_id === selectedCategory;
+                        const searchLower = searchQuery ? searchQuery.toLowerCase() : '';
+                        return matchesCategory && (!searchQuery || p.name.toLowerCase().includes(searchLower));
+                    }).length === 0 && (
+                            <div className="col-span-full text-center py-12 text-gray-400">
+                                <p className="text-lg">No encontramos productos que coincidan con tu búsqueda.</p>
+                                <button
+                                    onClick={() => setSearchParams({})}
+                                    className="mt-4 text-primary font-bold hover:underline"
+                                >
+                                    Ver todos los productos
+                                </button>
+                            </div>
+                        )}
                 </div>
             </section>
 

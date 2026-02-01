@@ -3,19 +3,65 @@ import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight } from 'l
 import { motion, AnimatePresence } from 'framer-motion';
 import { JaniboxLogo } from '../shared/Logos';
 import { useCart } from '../../context/CartContext';
+import { supabase } from '../../lib/supabaseClient';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { itemsCount, setIsCartOpen } = useCart();
+    const [user, setUser] = useState<any>(null);
+    const navigate = useNavigate();
+
+    // Search State
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+            setIsSearchOpen(false);
+            setSearchQuery('');
+            // Scroll to catalog
+            setTimeout(() => {
+                document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        // Check current session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            subscription.unsubscribe();
+        };
     }, []);
+
+    const getAvatarUrl = () => {
+        if (user?.user_metadata?.avatar_url) return user.user_metadata.avatar_url;
+        const name = user?.user_metadata?.full_name || '';
+        const isFemale = name.toLowerCase().endsWith('a') || name.toLowerCase().includes('maria');
+        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}&gender=${isFemale ? 'female' : 'male'}&backgroundColor=F4F4F4`;
+    };
+
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        navigate('/');
+    };
 
     return (
         <div className="fixed w-full z-50">
@@ -45,25 +91,89 @@ const Navbar = () => {
 
                         {/* Desktop Menu */}
                         <div className="hidden lg:flex items-center justify-center gap-10 flex-[2]">
-                            {['Productos', 'Más Vendidos', 'Nosotros', 'Preguntas', 'Blog'].map((item) => (
-                                <a
-                                    key={item}
-                                    href="#"
-                                    className="text-spaced text-gray-800 hover:text-primary transition-colors border-b border-transparent hover:border-primary pb-1"
-                                >
-                                    {item}
-                                </a>
-                            ))}
+                            <Link to="/search" className="text-spaced text-gray-800 hover:text-primary transition-colors border-b border-transparent hover:border-primary pb-1">Productos</Link>
+                            <Link to="/search?sort=best_seller" className="text-spaced text-gray-800 hover:text-primary transition-colors border-b border-transparent hover:border-primary pb-1">Más Vendidos</Link>
+                            <Link to="/nosotros" className="text-spaced text-gray-800 hover:text-primary transition-colors border-b border-transparent hover:border-primary pb-1">Nosotros</Link>
                         </div>
 
                         {/* Icons */}
                         <div className="flex-1 flex justify-end items-center gap-6 text-gray-800">
-                            <button className="hover:text-primary transition-colors hidden sm:block">
-                                <Search size={20} strokeWidth={1.5} />
-                            </button>
-                            <a href="/admin/login" className="hover:text-primary transition-colors hidden sm:block">
-                                <User size={20} strokeWidth={1.5} />
-                            </a>
+
+                            {/* Search Input */}
+                            <div className="relative hidden sm:block">
+                                <form
+                                    onSubmit={handleSearch}
+                                    className={`flex items-center transition-all duration-300 ${isSearchOpen ? 'w-48 border-b border-primary' : 'w-8 border-transparent'}`}
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (isSearchOpen && searchQuery) handleSearch({ preventDefault: () => { } } as any);
+                                            else setIsSearchOpen(!isSearchOpen);
+                                        }}
+                                        className="hover:text-primary transition-colors"
+                                    >
+                                        <Search size={20} strokeWidth={1.5} />
+                                    </button>
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className={`bg-transparent outline-none text-xs ml-2 w-full ${isSearchOpen ? 'visible opacity-100' : 'invisible opacity-0 w-0'}`}
+                                        autoFocus={isSearchOpen}
+                                    />
+                                    {isSearchOpen && searchQuery && (
+                                        <button
+                                            type="submit"
+                                            className="text-primary hover:text-pink-600 transition-colors ml-1"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    )}
+                                </form>
+                            </div>
+
+                            {user ? (
+                                <div className="relative group">
+                                    <button className="flex items-center gap-2 hover:text-primary transition-colors">
+                                        <div className="w-8 h-8 rounded-full border border-gray-100 overflow-hidden bg-gray-50 flex items-center justify-center">
+                                            <img
+                                                src={getAvatarUrl()}
+                                                className="w-full h-full object-cover"
+                                                alt="Avatar"
+                                                onError={(e) => {
+                                                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${user?.user_metadata?.full_name || 'User'}&background=CC6677&color=fff`;
+                                                }}
+                                            />
+                                        </div>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest hidden xl:inline">
+                                            {user.user_metadata?.full_name?.split(' ')[0] || 'Mi Cuenta'}
+                                        </span>
+                                    </button>
+
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-xl rounded-2xl border border-gray-100 py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                        <Link to="/profile" className="block px-6 py-2 text-xs font-bold text-gray-700 hover:text-primary hover:bg-gray-50 uppercase tracking-widest">
+                                            Mi Perfil
+                                        </Link>
+                                        <Link to="/profile#compras" className="block px-6 py-2 text-xs font-bold text-gray-700 hover:text-primary hover:bg-gray-50 uppercase tracking-widest">
+                                            Mis Compras
+                                        </Link>
+                                        <div className="h-px bg-gray-50 my-2 mx-4"></div>
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full text-left px-6 py-2 text-xs font-bold text-red-500 hover:bg-red-50 uppercase tracking-widest"
+                                        >
+                                            Cerrar Sesión
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Link to="/login" className="hover:text-primary transition-colors flex items-center gap-2">
+                                    <User size={20} strokeWidth={1.5} />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest hidden xl:inline">Ingresar</span>
+                                </Link>
+                            )}
                             <button
                                 onClick={() => setIsCartOpen(true)}
                                 className="hover:text-primary transition-colors relative"
@@ -100,11 +210,8 @@ const Navbar = () => {
                             </button>
                         </div>
                         <div className="flex flex-col gap-8 text-center mt-12">
-                            {['Productos', 'Más Vendidos', 'Nosotros', 'Preguntas', 'Blog'].map((item) => (
-                                <a key={item} href="#" className="text-xl font-light tracking-[0.25em] uppercase border-b border-gray-100 pb-4">
-                                    {item}
-                                </a>
-                            ))}
+                            <Link to="/search" className="text-xl font-light tracking-[0.25em] uppercase border-b border-gray-100 pb-4">Productos</Link>
+                            <Link to="/nosotros" className="text-xl font-light tracking-[0.25em] uppercase border-b border-gray-100 pb-4">Nosotros</Link>
                             <a href="/admin/login" className="text-spaced text-primary mt-8">Panel Admin</a>
                         </div>
                     </motion.div>
