@@ -6,19 +6,16 @@ import {
     Trash2,
     Gift,
     TrendingUp,
-    Users,
-    Calendar,
-    ChevronRight,
     Search,
-    Filter,
-    ShoppingBag
+    ShoppingBag,
+    Calendar
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Rewards = () => {
     const [coupons, setCoupons] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'coupons' | 'giftcards'>('coupons');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +36,7 @@ const Rewards = () => {
     }, []);
 
     const fetchCoupons = async () => {
-        setLoading(true);
+        // setLoading(true);
         const { data, error } = await supabase
             .from('coupons')
             .select('*')
@@ -47,7 +44,7 @@ const Rewards = () => {
 
         if (error) toast.error('Error cargando datos');
         else setCoupons(data || []);
-        setLoading(false);
+        // setLoading(false);
     };
 
     const handleCreate = async (e: React.FormEvent) => {

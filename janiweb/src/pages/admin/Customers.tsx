@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Mail, Copy, User, ShoppingBag, Edit2, Phone, MapPin, X, Upload, Save, FileText, Smartphone } from 'lucide-react';
+import { Search, Mail, Copy, User, Edit2, MapPin, X, Upload, Save, FileText, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 

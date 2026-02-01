@@ -25,7 +25,7 @@ const Products = () => {
         description: '',
         content: '',
         delivery_time: '',
-        delivery_time: '',
+
         policies: '',
         provider_id: ''
     });
@@ -84,8 +84,7 @@ const Products = () => {
                 description: product.description || '',
                 content: product.content || '',
                 delivery_time: product.delivery_time || '',
-                content: product.content || '',
-                delivery_time: product.delivery_time || '',
+
                 policies: product.policies || '',
                 provider_id: product.provider_id || ''
             });
@@ -102,7 +101,7 @@ const Products = () => {
                 description: '',
                 content: '',
                 delivery_time: '',
-                delivery_time: '',
+
                 policies: '',
                 provider_id: ''
             });
@@ -153,7 +152,7 @@ const Products = () => {
                 description: formData.description,
                 content: formData.content,
                 delivery_time: formData.delivery_time,
-                delivery_time: formData.delivery_time,
+
                 policies: formData.policies,
                 provider_id: formData.provider_id || null
             };
