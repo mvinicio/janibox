@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/api/payphone/:path*",
+            "destination": "https://pay.payphonetodoesposible.com/api/:path*"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
